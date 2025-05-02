@@ -2,24 +2,32 @@
 
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
 
+// Client component that takes in a prop called placeholder
+// useSearchParams --> Read the current URL's search params
+// usePathname --> Read the current pathname eg /dashboard/invoices
+// useRouter --> programatically reroute
 export default function Search({ placeholder }: { placeholder: string }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  function handleSearch(term: string) {
+  const handleSearch = useDebouncedCallback((userTyped: string) => {
+    console.log(`Searching... ${userTyped}`);
+    // We need URLSearchParams to mutate the value of the current query params
     const params = new URLSearchParams(searchParams);
-    // If there is something provided i.e. terms not null, then set the query=term; else, delete the query param
-    if (term) {
-      params.set("query", term);
+    params.set("page", "1");
+    // If there is something provided i.e. userTyped not null, then set the query=userTyped; else, delete the query param
+    if (userTyped) {
+      params.set("query", userTyped);
     } else {
       params.delete("query");
     }
 
     const newPathname = `${pathname}?${params.toString()}`;
     router.replace(newPathname);
-  }
+  }, 300);
 
   return (
     <div className="relative flex flex-1 flex-shrink-0">
